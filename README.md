@@ -12,7 +12,7 @@ weak patterns.
 
 - 📏 Entropy estimate (bits) based on length and character pool
 - ⏱️ Offline brute-force crack-time estimate
-- 🚩 Weak-pattern detection (common passwords, sequences, repeats, missing character classes)
+- 🚩 Weak-pattern detection (common passwords — including dressed-up variants like `Password123!` or `p@ssw0rd` — sequences, repeats, missing character classes)
 - 🗂️ Bash wrapper to audit a whole list of passwords at once
 - 🐍 No dependencies — Python standard library only
 
@@ -40,11 +40,25 @@ python3 password_analyzer.py "Tr0ub4dor&3"
 === Password Analysis ===
 Length          : 11
 Character pool  : 94
-Entropy         : 72.1 bits
+Entropy         : 72.1 bits (effective)
 Strength        : Strong
-Est. crack time : 4,521.8 years (offline, ~10,000,000,000/s)
+Est. crack time : 80.3 centuries (offline, ~10,000,000,000/s)
 
 [+] No obvious weaknesses found.
+```
+
+A common password stays weak even when it's dressed up:
+
+```
+=== Password Analysis ===
+Length          : 12
+Character pool  : 94
+Entropy         : 10.0 bits (effective)
+Strength        : Very Weak
+Est. crack time : instantly (offline, ~10,000,000,000/s)
+
+Weaknesses:
+  [!] Based on a common password (dictionary attacks try this first)
 ```
 
 ## How the score works
@@ -63,5 +77,3 @@ pessimistic, attacker-friendly assumption.
 ## License
 
 MIT © [Usman Faraz](https://github.com/usmanfarazz)
-# password-analyzer
-🔐 Local password strength analyzer with entropy &amp; crack-time estimation (Python + Bash)
