@@ -26,6 +26,10 @@ COMMON_PASSWORDS = {
 # Guesses per second a modern GPU rig can try against a fast, unsalted hash.
 GUESSES_PER_SECOND = 10_000_000_000
 
+# Common substitutions attackers' rules undo first (p@ssw0rd -> password).
+LEET_MAP = str.maketrans({"@": "a", "4": "a", "0": "o", "1": "i", "!": "i",
+                          "3": "e", "$": "s", "5": "s", "7": "t"})
+
 
 def character_pool(password: str) -> int:
     """Estimate the size of the character set the password draws from."""
@@ -68,13 +72,27 @@ def human_time(seconds: float) -> str:
     return "instantly"
 
 
+def is_common(password: str) -> bool:
+    """True if the password is a common password, possibly dressed up.
+
+    Catches the usual tricks cracking rules undo first: capitalisation,
+    digits/symbols tacked onto the ends (Password123!, admin@2024) and
+    simple leetspeak (p@ssw0rd).
+    """
+    lowered = password.lower()
+    core = re.sub(r"^[\d\W_]+|[\d\W_]+$", "", lowered)
+    candidates = {lowered, core, lowered.translate(LEET_MAP),
+                  core.translate(LEET_MAP)}
+    return any(c in COMMON_PASSWORDS for c in candidates if c)
+
+
 def find_weaknesses(password: str):
     """Return a list of human-readable weakness warnings."""
     issues = []
     if len(password) < 8:
         issues.append("Shorter than 8 characters")
-    if password.lower() in COMMON_PASSWORDS:
-        issues.append("Appears in the common-password list")
+    if is_common(password):
+        issues.append("Based on a common password (dictionary attacks try this first)")
     if password and password.lower() == password:
         issues.append("No uppercase letters")
     if not re.search(r"\d", password):
@@ -104,11 +122,15 @@ def analyze(password: str):
     bits = entropy_bits(password)
     combinations = 2 ** bits
     crack_seconds = combinations / 2 / GUESSES_PER_SECOND  # average case
+    if is_common(password):
+        # Brute-force maths doesn't apply: a wordlist + rules finds it at once.
+        bits = min(bits, 10.0)
+        crack_seconds = 0
 
     print("\n=== Password Analysis ===")
     print(f"Length          : {len(password)}")
     print(f"Character pool  : {character_pool(password)}")
-    print(f"Entropy         : {bits:.1f} bits")
+    print(f"Entropy         : {bits:.1f} bits (effective)")
     print(f"Strength        : {rating(bits)}")
     print(f"Est. crack time : {human_time(crack_seconds)} "
           f"(offline, ~{GUESSES_PER_SECOND:,}/s)")
