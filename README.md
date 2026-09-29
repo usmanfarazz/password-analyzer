@@ -14,6 +14,7 @@ weak patterns.
 - ⏱️ Offline brute-force crack-time estimate
 - 🚩 Weak-pattern detection (common passwords — including dressed-up variants like `Password123!` or `p@ssw0rd` — sequences, repeats, missing character classes)
 - 🗂️ Bash wrapper to audit a whole list of passwords at once
+- 🧾 JSON output (`--json`) for scripts, without ever including the password
 - 🐍 No dependencies — Python standard library only
 
 ## Requirements
@@ -29,6 +30,9 @@ python3 password_analyzer.py
 
 # Or pass it directly
 python3 password_analyzer.py "Tr0ub4dor&3"
+
+# JSON output for scripts (the password is never printed)
+python3 password_analyzer.py --json "Tr0ub4dor&3"
 
 # Audit a whole file (one password per line)
 ./check_passwords.sh passwords.txt
@@ -61,6 +65,12 @@ Weaknesses:
   [!] Based on a common password (dictionary attacks try this first)
 ```
 
+## Running the tests
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
 ## How the score works
 
 Entropy is estimated as `length × log2(pool size)`, where the pool grows with
@@ -72,7 +82,7 @@ pessimistic, attacker-friendly assumption.
 
 - [ ] Load a real wordlist (e.g. rockyou.txt) for dictionary checks
 - [ ] Check against the "Have I Been Pwned" k-anonymity API (opt-in)
-- [ ] JSON output mode
+- [x] JSON output mode
 
 ## License
 

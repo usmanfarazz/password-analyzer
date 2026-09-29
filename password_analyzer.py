@@ -11,6 +11,7 @@ Author: Usman Faraz (https://github.com/usmanfarazz)
 
 import argparse
 import getpass
+import json
 import math
 import re
 import sys
@@ -118,7 +119,11 @@ def rating(bits: float) -> str:
     return "Very Strong"
 
 
-def analyze(password: str):
+def evaluate(password: str) -> dict:
+    """Score a password and return the results as a dict.
+
+    The password itself is never included in the result.
+    """
     bits = entropy_bits(password)
     combinations = 2 ** bits
     crack_seconds = combinations / 2 / GUESSES_PER_SECOND  # average case
@@ -126,19 +131,30 @@ def analyze(password: str):
         # Brute-force maths doesn't apply: a wordlist + rules finds it at once.
         bits = min(bits, 10.0)
         crack_seconds = 0
+    return {
+        "length": len(password),
+        "character_pool": character_pool(password),
+        "entropy_bits": round(bits, 1),
+        "strength": rating(bits),
+        "crack_time_seconds": crack_seconds,
+        "crack_time": human_time(crack_seconds),
+        "weaknesses": find_weaknesses(password),
+    }
 
+
+def analyze(password: str):
+    r = evaluate(password)
     print("\n=== Password Analysis ===")
-    print(f"Length          : {len(password)}")
-    print(f"Character pool  : {character_pool(password)}")
-    print(f"Entropy         : {bits:.1f} bits (effective)")
-    print(f"Strength        : {rating(bits)}")
-    print(f"Est. crack time : {human_time(crack_seconds)} "
+    print(f"Length          : {r['length']}")
+    print(f"Character pool  : {r['character_pool']}")
+    print(f"Entropy         : {r['entropy_bits']:.1f} bits (effective)")
+    print(f"Strength        : {r['strength']}")
+    print(f"Est. crack time : {r['crack_time']} "
           f"(offline, ~{GUESSES_PER_SECOND:,}/s)")
 
-    issues = find_weaknesses(password)
-    if issues:
+    if r["weaknesses"]:
         print("\nWeaknesses:")
-        for issue in issues:
+        for issue in r["weaknesses"]:
             print(f"  [!] {issue}")
     else:
         print("\n[+] No obvious weaknesses found.")
@@ -149,12 +165,17 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze password strength locally.")
     parser.add_argument("password", nargs="?",
                         help="Password to analyze (omit to be prompted securely)")
+    parser.add_argument("--json", action="store_true",
+                        help="Print the result as JSON (the password itself is not included)")
     args = parser.parse_args()
 
     password = args.password or getpass.getpass("Enter password to analyze: ")
     if not password:
         sys.exit("[!] No password provided.")
-    analyze(password)
+    if args.json:
+        print(json.dumps(evaluate(password), indent=2))
+    else:
+        analyze(password)
 
 
 if __name__ == "__main__":
