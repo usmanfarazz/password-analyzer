@@ -97,7 +97,9 @@ def is_common(password: str) -> bool:
     """
     lowered = password.lower()
     core = re.sub(r"^[\d\W_]+|[\d\W_]+$", "", lowered)
-    candidates = {lowered, core, lowered.translate(LEET_MAP),
+    # Only the trailing symbols removed: "summer2024!" -> "summer2024"
+    no_symbols = re.sub(r"[\W_]+$", "", lowered)
+    candidates = {lowered, core, no_symbols, lowered.translate(LEET_MAP),
                   core.translate(LEET_MAP)}
     return any(c in COMMON_PASSWORDS for c in candidates if c)
 

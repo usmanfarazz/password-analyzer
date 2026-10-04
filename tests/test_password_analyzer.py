@@ -26,6 +26,17 @@ class CommonPasswordTest(unittest.TestCase):
             with self.subTest(pw=pw):
                 self.assertTrue(pa.is_common(pw))
 
+    def test_wordlist_entry_with_extra_symbol(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as fh:
+            fh.write("Summer2024\n")
+        try:
+            self.assertEqual(pa.load_wordlist(fh.name), 1)
+            self.assertTrue(pa.is_common("Summer2024!"))
+        finally:
+            os.remove(fh.name)
+            pa.COMMON_PASSWORDS.discard("summer2024")
+
     def test_random_password_not_common(self):
         self.assertFalse(pa.is_common("Tr0ub4dor&3"))
 
