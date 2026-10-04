@@ -1,5 +1,7 @@
 """Unit tests for password_analyzer.py. Run with: python3 -m unittest discover -s tests -v"""
+import json
 import os
+import subprocess
 import sys
 import unittest
 
@@ -46,6 +48,24 @@ class EvaluateTest(unittest.TestCase):
         issues = pa.find_weaknesses("aaa")
         self.assertIn("Shorter than 8 characters", issues)
         self.assertIn("Contains 3+ repeated characters in a row", issues)
+
+
+SCRIPT = os.path.join(os.path.dirname(__file__), "..", "password_analyzer.py")
+
+
+class CommandLineTest(unittest.TestCase):
+    def run_cli(self, args, stdin=""):
+        return subprocess.run([sys.executable, SCRIPT] + args, input=stdin,
+                              capture_output=True, text=True, check=True).stdout
+
+    def test_stdin_and_json(self):
+        out = json.loads(self.run_cli(["--stdin", "--json"], "password123\n"))
+        self.assertEqual(out["strength"], "Very Weak")
+        self.assertNotIn("password123", json.dumps(out))
+
+    def test_password_starting_with_dash(self):
+        out = self.run_cli(["--json", "--", "-Secret123!"])
+        self.assertEqual(json.loads(out)["length"], 11)
 
 
 if __name__ == "__main__":
