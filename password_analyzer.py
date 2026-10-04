@@ -73,6 +73,21 @@ def human_time(seconds: float) -> str:
     return "instantly"
 
 
+def load_wordlist(path: str) -> int:
+    """Add every line of a wordlist (e.g. rockyou.txt) to the common set.
+
+    Returns how many new entries were added. Lines are lower-cased, and the
+    file is read as latin-1 so odd bytes in big leaked lists never crash it.
+    """
+    before = len(COMMON_PASSWORDS)
+    with open(path, encoding="latin-1") as fh:
+        for line in fh:
+            word = line.strip().lower()
+            if word:
+                COMMON_PASSWORDS.add(word)
+    return len(COMMON_PASSWORDS) - before
+
+
 def is_common(password: str) -> bool:
     """True if the password is a common password, possibly dressed up.
 
@@ -167,9 +182,17 @@ def main():
                         help="Password to analyze (omit to be prompted securely)")
     parser.add_argument("--stdin", action="store_true",
                         help="Read the password from standard input (keeps it out of the process list)")
+    parser.add_argument("-w", "--wordlist",
+                        help="Extra list of known passwords to check against, one per line (e.g. rockyou.txt)")
     parser.add_argument("--json", action="store_true",
                         help="Print the result as JSON (the password itself is not included)")
     args = parser.parse_args()
+
+    if args.wordlist:
+        try:
+            load_wordlist(args.wordlist)
+        except OSError as exc:
+            sys.exit(f"[!] Could not read wordlist: {exc}")
 
     if args.stdin:
         password = sys.stdin.readline().rstrip("\r\n")
