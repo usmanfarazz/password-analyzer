@@ -22,6 +22,10 @@ COMMON_PASSWORDS = {
     "123456", "password", "123456789", "12345678", "12345", "qwerty",
     "abc123", "111111", "password1", "admin", "letmein", "welcome",
     "iloveyou", "monkey", "dragon", "sunshine", "princess", "football",
+    # more top leaked passwords, plus very common local choices
+    "baseball", "superman", "batman", "trustno1", "shadow", "master",
+    "qwertyuiop", "passw0rd", "secret", "summer", "cricket", "pakistan",
+    "lahore", "karachi", "islamabad", "bismillah", "admin123", "changeme",
 }
 
 # Guesses per second a modern GPU rig can try against a fast, unsalted hash.
