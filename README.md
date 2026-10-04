@@ -15,6 +15,7 @@ weak patterns.
 - 🚩 Weak-pattern detection (common passwords — including dressed-up variants like `Password123!` or `p@ssw0rd` — sequences, repeats, missing character classes)
 - 🗂️ Bash wrapper to audit a whole list of passwords at once
 - 🧾 JSON output (`--json`) for scripts, without ever including the password
+- 📚 `--wordlist` to check against a real password list such as rockyou.txt
 - 🙈 `--stdin` mode so passwords never appear in the process list; the batch script uses it
 - 🐍 No dependencies — Python standard library only
 
@@ -37,6 +38,9 @@ python3 password_analyzer.py --json "Tr0ub4dor&3"
 
 # Read the password from stdin (keeps it out of `ps` and shell history)
 printf '%s\n' "$PASSWORD" | python3 password_analyzer.py --stdin
+
+# Check against a real leaked-password list too
+python3 password_analyzer.py -w rockyou.txt "Summer2024!"
 
 # A password that starts with "-" goes after "--"
 python3 password_analyzer.py -- "-Secret123!"
@@ -87,7 +91,7 @@ pessimistic, attacker-friendly assumption.
 
 ## Roadmap
 
-- [ ] Load a real wordlist (e.g. rockyou.txt) for dictionary checks
+- [x] Load a real wordlist (e.g. rockyou.txt) for dictionary checks
 - [ ] Check against the "Have I Been Pwned" k-anonymity API (opt-in)
 - [x] JSON output mode
 
