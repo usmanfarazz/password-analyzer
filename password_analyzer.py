@@ -165,11 +165,16 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze password strength locally.")
     parser.add_argument("password", nargs="?",
                         help="Password to analyze (omit to be prompted securely)")
+    parser.add_argument("--stdin", action="store_true",
+                        help="Read the password from standard input (keeps it out of the process list)")
     parser.add_argument("--json", action="store_true",
                         help="Print the result as JSON (the password itself is not included)")
     args = parser.parse_args()
 
-    password = args.password or getpass.getpass("Enter password to analyze: ")
+    if args.stdin:
+        password = sys.stdin.readline().rstrip("\r\n")
+    else:
+        password = args.password or getpass.getpass("Enter password to analyze: ")
     if not password:
         sys.exit("[!] No password provided.")
     if args.json:

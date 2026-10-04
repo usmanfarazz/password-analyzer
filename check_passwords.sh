@@ -26,7 +26,9 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     count=$((count + 1))
     echo "############################################################"
     echo "# Password #$count"
-    python3 "$SCRIPT_DIR/password_analyzer.py" -- "$line"
+    # Pipe the password in instead of passing it as an argument, so it never
+    # shows up in the process list (ps) for other users on the machine.
+    printf '%s\n' "$line" | python3 "$SCRIPT_DIR/password_analyzer.py" --stdin
 done < "$FILE"
 
 echo "[+] Analyzed $count password(s)."
