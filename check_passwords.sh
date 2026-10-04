@@ -26,7 +26,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     count=$((count + 1))
     echo "############################################################"
     echo "# Password #$count"
-    python3 "$SCRIPT_DIR/password_analyzer.py" "$line"
+    python3 "$SCRIPT_DIR/password_analyzer.py" -- "$line"
 done < "$FILE"
 
 echo "[+] Analyzed $count password(s)."
